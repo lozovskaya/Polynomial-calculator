@@ -169,12 +169,14 @@ Elem *return_polynomial(const string &s) { // convert string to polynomial
         ++i;
     }
     while (i < (int) s.size()) {
-        while (s[i] != '.' && s[i] != '-' && s[i] != '+') {
+        while (i < (int) s.size() && s[i] != '.' && s[i] != '-' && s[i] != '+') {
             mon += s[i];
             ++i;
         }
         add_monomial(polynomial, return_monomial(mon));
-        mon = s[i];
+        if (i < (int) s.size()) {
+            mon = s[i];
+        }
         ++i;
     }
     return polynomial;
@@ -189,7 +191,7 @@ bool check_polynomial(vector<Elem *> &v, int n, const string &s) {  // check whe
     }
     char variable = 'A';
     while (i < (int) s.size()) {
-        while (s[i] != '.' && s[i] != '-' && s[i] != '+') {
+        while (i < (int) s.size() && s[i] != '.' && s[i] != '-' && s[i] != '+') {
             mon += s[i];
             ++i;
         }
@@ -204,7 +206,9 @@ bool check_polynomial(vector<Elem *> &v, int n, const string &s) {  // check whe
                 return false;
             }
         }
-        mon = s[i];
+        if (i < (int) s.size()) {
+            mon = s[i];
+        }
         ++i;
     }
     auto ne = return_polynomial(s);
@@ -300,9 +304,26 @@ bool find_elem(vector<Elem *> &v, int n, int flag = 0) {
     return false;
 }
 
+
+void differentiation(Elem *&polynomial) {
+     auto iterator = polynomial;
+     while (iterator) {
+         if (iterator->next && iterator->next->degree == 0) {
+            iterator->next = nullptr;
+            break;
+         } else {
+            iterator->k *= iterator->degree;
+            --iterator->degree;
+         }
+         iterator = iterator->next;
+     }
+}
+
+
+
 int main() {
-    ios_base::sync_with_stdio(0), cin.tie(0);
-#ifdef LOCAL
+    ios_base::sync_with_stdio(0);
+#ifdef iLOCAL
     freopen("input.txt", "r", stdin);
 #endif
     string command;
@@ -374,6 +395,23 @@ int main() {
                 cout << "TRUE\n";
             } else {
                 cout << "FALSE\n";
+            }
+            continue;
+        }
+        if (command == "DIFF") {
+            int n;
+            cin >> n;
+            bool found = find_elem(v, n);
+            if (!found) {
+                err("no polynomial here");
+            } else {
+                for (int i = 0; i < (int) v.size(); ++i) {
+                    if (v[i]->number == n) {
+                        differentiation(v[i]);
+                        cout << "OK\n";
+                        break;
+                    }
+                }
             }
             continue;
         }
